@@ -1,16 +1,3 @@
-Img = imread('vampire-bat-blood-taste-buds-01.jpg');
-H = [1 .2 0; .1 1 0; 0.5 0.2 1];
-imshow(ComputeProjective(Img, H));
-
-
-
-
-
-function [TransformIm] = ComputeProjective(Im, H)
-    T = maketform('projective',H);
-    TransformIm = imtransform(Im,T);
-end
-
 function [num_matches, matches, dist_vals] = match(image1, image2, distRatio)
 
 % Find SIFT keypoints for each image
@@ -30,30 +17,31 @@ des2t = des2';                          % Precompute matrix transpose
 for i = 1 : size(des1,1)
    dotprods = des1(i,:) * des2t;        % Computes vector of dot products
    [vals,indx] = sort(acos(dotprods));  % Take inverse cosine and sort results
-
+    
    % Check if nearest neighbor has angle less than distRatio times 2nd.
    if (vals(1) < distRatio * vals(2))
       match(i) = indx(1);
+      dist(i) = sqrt(sum((des1(i,:) - des2(match(i),:)) .^ 2));
    else
+      dist(i) = 0;
       match(i) = 0;
    end
 end
 
-% Create a new image showing the two images side by side.
-im3 = appendimages(im1,im2);
 
-% Show a figure with lines joining the accepted matches.
-figure('Position', [100 100 size(im3,2) size(im3,1)]);
-colormap('gray');
-imagesc(im3);
-hold on;
-cols1 = size(im1,2);
+num_matches = sum(match > 0);
+matches = zeros(num_matches, 4);
+dist_vals = zeros(num_matches);
+
+row1 = 1;
 for i = 1: size(des1,1)
   if (match(i) > 0)
-    line([loc1(i,2) loc2(match(i),2)+cols1], ...
-         [loc1(i,1) loc2(match(i),1)], 'Color', 'c');
+      matches(row1, 1) = floor(loc1(match(i),2)); %subpixel precision
+      matches(row1, 2) = floor(loc2(match(i),2)); %subpixel precision
+      matches(row1, 3) = floor(loc1(match(i),1)); %subpixel precision
+      matches(row1, 4) = floor(loc2(match(i),1)); %subpixel precision
+      dist_vals(row1) = dist(i);
+      row1 = row1 + 1;
   end
 end
-hold off;
-num = sum(match > 0);
-fprintf('Found %d matches.\n', num);
+fprintf('Found %d matches.\n', num_matches);
