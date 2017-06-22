@@ -21,7 +21,7 @@ for i = 1 : size(des1,1)
    % Check if nearest neighbor has angle less than distRatio times 2nd.
    if (vals(1) < distRatio * vals(2))
       match(i) = indx(1);
-      dist(i) = sqrt(sum((des1(i,:) - des2(match(i),:)) .^ 2));
+      dist(i) = sqrt(sum((des1(i,:) - des2(match(i),:)) .^ 2)); % euclidean distance
    else
       dist(i) = 0;
       match(i) = 0;
@@ -31,11 +31,11 @@ end
 
 num_matches = sum(match > 0);
 matches = zeros(num_matches, 4);
-dist_vals = zeros(num_matches);
+dist_vals = zeros(num_matches, 1);
 
 row1 = 1;
 for i = 1: size(des1,1)
-  if (match(i) > 0)
+  if (match(i) > 0) %notice that for some reson locs are (y,x) instead of (x,y).
       matches(row1, 1) = floor(loc1(match(i),2)); %subpixel precision
       matches(row1, 2) = floor(loc2(match(i),2)); %subpixel precision
       matches(row1, 3) = floor(loc1(match(i),1)); %subpixel precision
