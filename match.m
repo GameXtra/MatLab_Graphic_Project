@@ -16,12 +16,12 @@ function [num_matches, matches, dist_vals] = match(image1, image2, distRatio)
 des2t = des2';                          % Precompute matrix transpose
 for i = 1 : size(des1,1)
    dotprods = des1(i,:) * des2t;        % Computes vector of dot products
-   [vals,indx] = sort(acos(dotprods));  % Take inverse cosine and sort results
+   [vals,indx] = sort(acos(dotprods));  % Take inverse cosine and sort results #################### use distance euclean instead of dot prroduct
     
    % Check if nearest neighbor has angle less than distRatio times 2nd.
    if (vals(1) < distRatio * vals(2))
       match(i) = indx(1);
-      dist(i) = sqrt(sum((des1(i,:) - des2(match(i),:)) .^ 2)); % euclidean distance
+      dist(i) = sqrt(sum((des1(i,:) - des2(indx(1),:)) .^ 2)) / sqrt(sum((des1(i,:) - des2(indx(2),:)) .^ 2));
    else
       dist(i) = 0;
       match(i) = 0;
@@ -36,10 +36,10 @@ dist_vals = zeros(num_matches, 1);
 row1 = 1;
 for i = 1: size(des1,1)
   if (match(i) > 0) %notice that for some reson locs are (y,x) instead of (x,y).
-      matches(row1, 1) = floor(loc1(match(i),2)); %subpixel precision
-      matches(row1, 2) = floor(loc2(match(i),2)); %subpixel precision
-      matches(row1, 3) = floor(loc1(match(i),1)); %subpixel precision
-      matches(row1, 4) = floor(loc2(match(i),1)); %subpixel precision
+      matches(row1, 1) = loc1(i,2);
+      matches(row1, 2) = loc1(i,1);
+      matches(row1, 3) = loc2(match(i),2);
+      matches(row1, 4) = loc2(match(i),1);
       dist_vals(row1) = dist(i);
       row1 = row1 + 1;
   end
