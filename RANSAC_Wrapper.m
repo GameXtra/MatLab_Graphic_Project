@@ -12,20 +12,21 @@ function f = distfn_fit_ransac_needs(distfn)
 end
 
 function [inliers, RetH] = distfn_with_inline(distfn, H, matches, t)
-    if size(H,1) ~= 0
+    if isempty(H)
+    else
         if size(H,3) ~= 1 % number of matrixes options, need to return the min one.
             inliersMinValue = Inf;
             for i = 1 : size(H,1)
                [curInliers, curH] = distfn_with_inline(distfn, H(i,:,:), matches, t);
                sumCurInliers = sum(curInliers);
-               if sumCurInliers < inliersMinValue && size(curH,1) ~= 0
+               if sumCurInliers < inliersMinValue && isempty(curH) ~= true
                     inliersMinValue = sumCurInliers;
                     inliers = curInliers;
                     RetH = curH;
-               elseif sumCurInliers == inliersMinValue && size(curH,1) ~= 0
+               elseif sumCurInliers == inliersMinValue && isempty(curH) ~= true
                     [inliers1, error1] = getHInfo(distfn, curH, matches);    
                     [inliers2, error2] = getHInfo(distfn, RetH, matches);
-                    if sum(inliers2>0) <= sum(inliers1>0) && error2 < error1:
+                    if sum(inliers2>0) <= sum(inliers1>0) && error2 < error1
                         inliers = curInliers;
                         RetH = curH;
                     end
