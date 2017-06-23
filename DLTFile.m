@@ -7,18 +7,15 @@ matches = [230.67,749.49 ,285.83,708.2;
 166.58,855.98 , 245.88,797.93;
 380.97,758.03 , 412.41,735.71;
 361.86,713.22 , 392.86,696.62;
-392.31,649.38 , 407.89,638.14]
+392.31,649.38 , 407.89,638.14];
 
-normalizedMatches = DLT(matches)
-%disp(normalizedMatches)
-%disp(mean(normalizedMatches))
-
+H = DLT(matches);
 
 function [H] = DLT(matches)
     % stages: (1),(2) 
-    [numRows , numColumns] = size(matches)
+    [numRows , numColumns] = size(matches);
 
-    columnMeans = mean(matches,1)
+    columnMeans = mean(matches,1);
     x1Mean = columnMeans(1);
     y1Mean = columnMeans(2);
     x2Mean = columnMeans(3);
@@ -35,25 +32,19 @@ function [H] = DLT(matches)
     points2(:,1:2) = matches(:,3:4);
     points2(:,3) = wColumn;
 
-    T1translate = [1,0,0; 0,1,0; -x1Mean, -y1Mean,1];
-    T2translate = [1,0,0; 0,1,0; -x2Mean, -y2Mean,1];
+    T1translate = [1,0,0; 0,1,0; -x1Mean, -y1Mean,1]';
+    T2translate = [1,0,0; 0,1,0; -x2Mean, -y2Mean,1]';
 
-    disp(points1)
-    disp(points2)
-    disp(points1 * T1translate)
-    disp(points2 * T2translate)
-
-    
     %find average length of points x1 y1:    
     points1LengthSum = 0;
     for row  = 1:numRows
             X = [0,0; matches(row,1),matches(row,2)];
-            points1LengthSum = points1LengthSum + pdist(X,'euclidean')
+            points1LengthSum = points1LengthSum + pdist(X,'euclidean');
     end
     points2LengthSum = 0;
     for row  = 1:numRows
             X = [0,0; matches(row,3),matches(row,4)];
-            points2LengthSum = points2LengthSum + pdist(X,'euclidean')
+            points2LengthSum = points2LengthSum + pdist(X,'euclidean');
     end
 
     averageLengthPoints1 = points1LengthSum / numRows;
@@ -61,37 +52,38 @@ function [H] = DLT(matches)
 
     c1 = sqrt(2)/averageLengthPoints1;
     c2 = sqrt(2)/averageLengthPoints2;
-    T1scale = [c1,0,0; 0,c1,0; 0,0,1];
-    T2scale = [c2,0,0; 0,c2,0; 0,0,1];
-
+    T1scale = [c1,0,0; 0,c1,0; 0,0,1]';
+    T2scale = [c2,0,0; 0,c2,0; 0,0,1]';
+    
     % for testing:
-    %T1scale = [10,0,0; 0,10,0; 0,0,1];
-    %T1translate = [1,0,0; 0,1,0; -10, -10,1];
+    %T1scale = [10,0,0; 0,10,0; 0,0,1]';
+    %T1translate = [1,0,0; 0,1,0; -10, -10,1]';
     
-    T1 = T1translate*T1scale;
-    T2 = T2translate*T2scale;
-    
-    %disp(points1*T1)
-    
-    normalizedPoints1 = points1*T1;
-    normalizedPoints2 = points1*T2;
+    T1 = T1scale*T1translate;
+    T2 = T2scale*T2translate;
+
+    normalizedPoints1 = (T1*points1')';
+    normalizedPoints2 = (T2*points2')';
     
     % stage: (3)
-    A = zeros(2*numRows, 9)
+    A = zeros(2*numRows, 9);
     for i=1:numRows
-        x2 = points2(i,1);
-        y2 = points2(i,2);
-        w2 = points2(i,3);
+        x2 = normalizedPoints2(i,1);
+        y2 = normalizedPoints2(i,2);
+        w2 = normalizedPoints2(i,3);
         
-        x1 = points1(i,1);
-        y1 = points1(i,2);
-        w1 = points1(i,3);
+        x1 = normalizedPoints1(i,1);
+        y1 = normalizedPoints1(i,2);
+        w1 = normalizedPoints1(i,3);
         
         Ai = [0,0,0,-w2*x1,-w2*y1,-w2*w1,y2*x1,y2*y1,y2*w1;
               w2*x1,w2*y1,w2*w1,0,0,0,-x2*x1,-x2*y1,-x2*w1];  
-
         
+        A((i*2)-1:i*2,1:9) = Ai;        
     end
-    %temporary, delete this!!
-    H = matches
+    
+    disp(A)
+    svdA = svd(A);
+    H = vec2mat(svdA,3);
+    H = inv(T2)*H*T1;
 end
