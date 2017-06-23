@@ -1,0 +1,26 @@
+function [H_ransac] = RANSAC_Wrapper(matches, fittingfn, ...
+    distfn, degenfn, s, t, feedback, maxDataTrials, ...
+    maxTrials)
+        distfn = distfn_fit_ransac_needs(distfn);
+        
+        [H_ransac, inliers] = ransac(matches, fittingfn, distfn, degenfn, s, t, feedback, ...
+                               maxDataTrials, maxTrials);
+end
+
+function f = distfn_fit_ransac_needs(distfn)
+    f = @(M, x, t) distfn_with_inline(distfn, M, x, t);
+end
+
+function [inliers, M1] = distfn_with_inline(distfn, M, matches, t)
+    if size(M,3) ~= 0
+        if size(M,3) ~= 1
+            inliersMinValue = Inf;
+            for i = 1 : size(M,1)
+               [curInliers, curM] = distfn_with_inline(distfn, M(i,:,:), matches, t);
+               if(curInliers < 
+            end
+        else
+
+        end
+    end
+end

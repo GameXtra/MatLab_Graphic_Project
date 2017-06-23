@@ -9,3 +9,4 @@ H2=[2 0 0; 0 2 0; 6 2 1];
 ans1 = ComputeError(pnts_gt,pnts_computed);
 [pnts_gt,pnts_computed] = ComputeTestPoints(H , H2);
 ans2 = ComputeError(pnts_gt,pnts_computed);
+%[pnts_gt,pnts_computed] = ComputeTestPoints(H,H1); ComputeError(pnts_gt,pnts_computed);

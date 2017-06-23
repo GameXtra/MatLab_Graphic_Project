@@ -1,20 +1,14 @@
 function [error] = ComputeError(pnts_gt,pnts_computed)
-
-end
-
-function [pnts_gt,pnts_computed] = ComputeTestPoints(H_gt,H_computed)
-    pointToCompute = 5;
-    original_points = rand([pointToCompute,3]);
-    pnts_gt = rand([pointToCompute,3]);
-    pnts_computed = rand([pointToCompute,3]);
-    for i = 1: pointToCompute
-        original_points(i,1) = original_points(i,1) * 1000;
-        original_points(i,2) = original_points(i,2) * 1000;
-        original_points(i,3) = 1;
-        
-        
+    error = pnts_gt - pnts_computed;
+    error(:,1) = error(:,1)
+    error = cellfun(@(x) x*x, error);
+    error = error * [1, 1];
+    error = cellfun(@(x) sqrt(x), error);
+    numOfLines = size(error,1);
+    error = sum(error).
+error = 0;
+    for i = 1 : size(pnts_gt, 1)
+        error = error + EuclideanDistance(pnts_gt(i, :), pnts_computed(i, :));
     end
-    matches = zeros(num_matches, 4);
-    matches = zeros(num_matches, 4);
-    
+    error = error / size(pnts_gt, 1);
 end

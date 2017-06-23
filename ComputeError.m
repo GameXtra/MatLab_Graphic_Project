@@ -1,12 +1,7 @@
 function [error] = ComputeError(pnts_gt,pnts_computed)
-    error = 0;
-    for i = 1 : size(pnts_gt, 1)
-        error = error + EuclideanDistance(pnts_gt(i, :), pnts_computed(i, :));
-    end
-    error = error / size(pnts_gt, 1);
-end
-
-function [D] = EuclideanDistance(G,G2)
-    V = G - G2;
-    D = sqrt(V * V');
+    error = pnts_gt - pnts_computed;
+    error = num2cell(error, 2);            %# Collect the rows into cells
+    numOfLines= size(error,1);
+    error = cellfun(@(x) sqrt(x(1)*x(1) + x(2)*x(2)) , error);
+    error = sum(error)/numOfLines;
 end
