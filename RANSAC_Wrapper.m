@@ -3,30 +3,29 @@ function [H_ransac] = RANSAC_Wrapper(matches, fittingfn, ...
     maxTrials)
         distfn = distfn_fit_ransac_needs(distfn);
         
-        [H_ransac, inliers] = ransac(matches, fittingfn, distfn, degenfn, s, t, feedback, ...
+        [H_ransac, inliers] = ransac(matches', fittingfn, distfn, degenfn, s, t, feedback, ...
                                maxDataTrials, maxTrials);
 end
 
 function f = distfn_fit_ransac_needs(distfn)
-    f = @(M, x, t) distfn_with_inline(distfn, M, x, t);
+    f = @(M, x, t) distfn_with_inliners(distfn, M, x', t);
 end
 
-function [inliers, RetH] = distfn_with_inline(distfn, H, matches, t)
-    if isempty(H)
-    else
+function [inliers, RetH] = distfn_with_inliners(distfn, H, matches, t)
+    if ~isempty(H)
         if size(H,3) ~= 1 % number of matrixes options, need to return the min one.
-            inliersMinValue = Inf;
+            inliersMaxValue = 0;
             for i = 1 : size(H,1)
-               [curInliers, curH] = distfn_with_inline(distfn, H(i,:,:), matches, t);
-               sumCurInliers = sum(curInliers);
-               if sumCurInliers < inliersMinValue && isempty(curH) ~= true
-                    inliersMinValue = sumCurInliers;
+               [curInliers, curH] = distfn_with_inliners(distfn, H(i,:,:), matches, t);
+               lengthCurInliers = length(curInliers);
+               if lengthCurInliers > inliersMaxValue && (~isempty(curH))
+                    inliersMaxValue = lengthCurInliers;
                     inliers = curInliers;
                     RetH = curH;
-               elseif sumCurInliers == inliersMinValue && isempty(curH) ~= true
-                    [inliers1, error1] = getHInfo(distfn, curH, matches);    
-                    [inliers2, error2] = getHInfo(distfn, RetH, matches);
-                    if sum(inliers2>0) <= sum(inliers1>0) && error2 < error1
+               elseif lengthCurInliers == inliersMaxValue && (~isempty(curH))
+                    [inliers1, error1] = getHInfo(distfn, curH, matches, t);    
+                    [inliers2, error2] = getHInfo(distfn, RetH, matches, t);
+                    if length(inliers2>0) <= length(inliers1>0) && error2 < error1
                         inliers = curInliers;
                         RetH = curH;
                     end
@@ -34,12 +33,12 @@ function [inliers, RetH] = distfn_with_inline(distfn, H, matches, t)
             end
         else
             RetH = H;
-            [inliers, error] = getHInfo(distfn, H, matches)
+            [inliers, error] = getHInfo(distfn, H, matches, t);
         end
     end
 end
 
-function [inliers, error] = getHInfo(distfn, H, matches)
+function [inliers, error] = getHInfo(distfn, H, matches, t)
             original_points = matches(:,1:2);
             original_points(:,3) = ones(size(original_points,1),1);
             
@@ -53,7 +52,14 @@ function [inliers, error] = getHInfo(distfn, H, matches)
             distance_between_pnts_computed = pnts_gt - pnts_computed;
             distance_between_pnts_computed = num2cell(distance_between_pnts_computed, 2);            %# Collect the rows into cells
             distance_between_pnts_computed = cellfun(@(x) sqrt(x(1)*x(1) + x(2)*x(2)) , distance_between_pnts_computed);
-            inliers = (distance_between_pnts_computed < t);
+            row1 = 1;
+            inliers = zeros(sum((distance_between_pnts_computed < t)),1);
+            for i = 1: size(distance_between_pnts_computed, 1)
+                if (distance_between_pnts_computed(i) < t)
+                    inliers(row1) = i;
+                    row1 = row1 + 1;
+                end
+            end
             
             error = distfn(pnts_gt,pnts_computed);
 end

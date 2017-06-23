@@ -10,21 +10,22 @@
 % 392.31,649.38 , 407.89,638.14];
 
 
-Img1FileName = 'left.pgm';
-Img2FileName = 'right.pgm';
-[num_matches, matches, dist_vals] = match(Img1FileName, Img2FileName, 0.5);
-
-H = DLT(matches);
-T = maketform('projective',H);
-I = imread('left.pgm');
-
-%imshow(I);
-I2 = imtransform(I,T);
-
-imshow(I2);
+% Img1FileName = 'left.pgm';
+% Img2FileName = 'right.pgm';
+% [num_matches, matches, dist_vals] = match(Img1FileName, Img2FileName, 0.5);
+% 
+% H = DLT(matches);
+% T = maketform('projective',H);
+% I = imread('left.pgm');
+% 
+% %imshow(I);
+% I2 = imtransform(I,T);
+% 
+% imshow(I2);
 
 function [H] = DLT(matches)
     % stages: (1),(2) 
+    disp( size(matches))
     [numRows , numColumns] = size(matches);
 
     columnMeans = mean(matches,1); %array with mean per column

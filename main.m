@@ -12,11 +12,12 @@
 % %[pnts_gt,pnts_computed] = ComputeTestPoints(H,H1); ComputeError(pnts_gt,pnts_computed);
 Img1FileName = 'left.pgm';
 Img2FileName = 'right.pgm';
-[num_matches, matches, dist_vals] = match(Img1FileName, Img2FileName, 0.5);
+[num_matches, matches, dist_vals] = match(Img1FileName, Img2FileName, 0.4);
 
-[H] = RANSAC_Wrapper(matches, fittingfn, ...
-    distfn, degenfn, s, t, feedback, maxDataTrials, ...
-    maxTrials)T = maketform('projective',H);
+[H] = RANSAC_Wrapper(matches, @(x) DLTFile(x), ...
+    @(x,y) ComputeError(x,y), @(x) 0, 5, 400, 1, 100, ...
+    1000);
+T = maketform('projective',H);
 I = imread('left.pgm');
 
 %imshow(I);
