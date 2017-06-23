@@ -77,6 +77,7 @@ function [H] = DLT(matches)
     normalizedPoints2 = points1*T2;
     
     % stage: (3)
+    A = zeros(2*numRows, 9)
     for i=1:numRows
         x2 = points2(i,1);
         y2 = points2(i,2);
@@ -86,9 +87,11 @@ function [H] = DLT(matches)
         y1 = points1(i,2);
         w1 = points1(i,3);
         
-        Ai = [0,0,0,-w2*x1,-w2*y1,-w2*w1,
+        Ai = [0,0,0,-w2*x1,-w2*y1,-w2*w1,y2*x1,y2*y1,y2*w1;
+              w2*x1,w2*y1,w2*w1,0,0,0,-x2*x1,-x2*y1,-x2*w1];  
 
-    
+        
+    end
     %temporary, delete this!!
     H = matches
 end
