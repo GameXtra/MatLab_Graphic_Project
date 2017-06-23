@@ -21,7 +21,7 @@ for i = 1 : size(des1,1)
    % Check if nearest neighbor has angle less than distRatio times 2nd.
    if (vals(1) < distRatio * vals(2))
       match(i) = indx(1);
-      dist(i) = sqrt(sum((des1(i,:) - des2(indx(1),:)) .^ 2)) / sqrt(sum((des1(i,:) - des2(indx(2),:)) .^ 2));
+      dist(i) = vals(1)/vals(2);%sqrt(sum((des1(i,:) - des2(indx(1),:)) .^ 2)) / sqrt(sum((des1(i,:) - des2(indx(2),:)) .^ 2));
    else
       dist(i) = 0;
       match(i) = 0;
