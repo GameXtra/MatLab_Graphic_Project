@@ -22,20 +22,29 @@ function [inliers, RetH] = distfn_with_inline(distfn, H, matches, t)
                     inliersMinValue = sumCurInliers;
                     inliers = curInliers;
                     RetH = curH;
+               elseif sumCurInliers == inliersMinValue && size(curH,1) ~= 0
+                    [inliers1, error1] = getHInfo(distfn, curH, matches);    
+                    [inliers2, error2] = getHInfo(distfn, RetH, matches);
+                    if sum(inliers2>0) <= sum(inliers1>0) && error2 < error1:
+                        inliers = curInliers;
+                        RetH = curH;
+                    end
                end
             end
         else
             RetH = H;
+            [inliers, error] = getHInfo(distfn, H, matches)
+        end
+    end
+end
+
+function [inliers, error] = getHInfo(distfn, H, matches)
             original_points = matches(:,1:2);
             original_points(:,3) = ones(size(original_points,1),1);
+            
             pnts_computed = (H' * original_points')';
             pnts_gt = matches(:,3:4);
-            pnts_gt(:,3) = ones(size(pnts_gt,1),1);
-          
-            pnts_gt = num2cell(pnts_gt, 2);                        %# Collect the rows into cells
-            pnts_gt = cellfun(@(x) [x(1)/x(3), x(2)/x(3)] , pnts_gt , 'UniformOutput', false);
-            pnts_gt = cell2mat(pnts_gt);
-
+            
             pnts_computed = num2cell(pnts_computed, 2);            %# Collect the rows into cells
             pnts_computed = cellfun(@(x) [x(1)/x(3), x(2)/x(3)] , pnts_computed,'UniformOutput', false);
             pnts_computed = cell2mat(pnts_computed);
@@ -44,7 +53,6 @@ function [inliers, RetH] = distfn_with_inline(distfn, H, matches, t)
             distance_between_pnts_computed = num2cell(distance_between_pnts_computed, 2);            %# Collect the rows into cells
             distance_between_pnts_computed = cellfun(@(x) sqrt(x(1)*x(1) + x(2)*x(2)) , distance_between_pnts_computed);
             inliers = (distance_between_pnts_computed < t);
-
-        end
-    end
+            
+            error = distfn(pnts_gt,pnts_computed);
 end
