@@ -1,0 +1,20 @@
+function [error] = ComputeError(pnts_gt,pnts_computed)
+
+end
+
+function [pnts_gt,pnts_computed] = ComputeTestPoints(H_gt,H_computed)
+    pointToCompute = 5;
+    original_points = rand([pointToCompute,3]);
+    pnts_gt = rand([pointToCompute,3]);
+    pnts_computed = rand([pointToCompute,3]);
+    for i = 1: pointToCompute
+        original_points(i,1) = original_points(i,1) * 1000;
+        original_points(i,2) = original_points(i,2) * 1000;
+        original_points(i,3) = 1;
+        
+        
+    end
+    matches = zeros(num_matches, 4);
+    matches = zeros(num_matches, 4);
+    
+end
