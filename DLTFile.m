@@ -15,9 +15,11 @@ Img2FileName = 'right.pgm';
 
 H = DLT(matches);
 T = maketform('projective',H);
-I = imread('cameraman.tif');
+I = imread('left.pgm');
 
-imshow(I), 
+%imshow(I);
+I2 = imtransform(I,T);
+figure, imshow(I2)
 
 function [H] = DLT(matches)
     % stages: (1),(2) 
@@ -36,6 +38,8 @@ function [H] = DLT(matches)
     points1 = zeros(numRows, 3);
     points1(:,1:2) = matches(:,1:2);
     points1(:,3) = wColumn;
+    
+    disp("LOOK HERE")
 
     points2 = zeros(numRows, 3);
     points2(:,1:2) = matches(:,3:4);
@@ -45,7 +49,7 @@ function [H] = DLT(matches)
     T1translate = [1,0,0; 0,1,0; -x1Mean, -y1Mean,1]';
     T2translate = [1,0,0; 0,1,0; -x2Mean, -y2Mean,1]';
     
-    %find average length of points x1 y1:    
+    %find average length of points x1 y1:
     points1LengthSum = 0;
     for row  = 1:numRows
             X = [0,0; matches(row,1),matches(row,2)];
@@ -101,5 +105,6 @@ function [H] = DLT(matches)
     H = vec2mat(svdA,3);
     disp(H)
     disp("????")
-    H = inv(T2)*H*T1;
+    H = (inv(T2)*H*T1)';
+    H = T1translate;
 end
