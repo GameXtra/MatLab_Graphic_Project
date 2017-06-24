@@ -1,65 +1,43 @@
-function [H_ransac] = RANSAC_Wrapper(matches, fittingfn, ...
+function [H] = RANSAC_Wrapper(matches, fittingfn, ...
     distfn, degenfn, s, t, feedback, maxDataTrials, ...
     maxTrials)
-        distfn = distfn_fit_ransac_needs(distfn);
-        
-        [H_ransac, inliers] = ransac(matches', fittingfn, distfn, degenfn, s, t, feedback, ...
-                               maxDataTrials, maxTrials);
-end
+        if nargin < 9; maxTrials = 1000;    end
+        if nargin < 8; maxDataTrials = 100; end
+        if nargin < 7; feedback = 0;        end
 
-function f = distfn_fit_ransac_needs(distfn)
-    f = @(M, x, t) distfn_with_inliners(distfn, M, x', t);
-end
-
-function [inliers, RetH] = distfn_with_inliners(distfn, H, matches, t)
-    if ~isempty(H)
-        if size(H,3) ~= 1 % number of matrixes options, need to return the min one.
-            inliersMaxValue = 0;
-            for i = 1 : size(H,1)
-               [curInliers, curH] = distfn_with_inliners(distfn, H(i,:,:), matches, t);
-               lengthCurInliers = length(curInliers);
-               if lengthCurInliers > inliersMaxValue && (~isempty(curH))
-                    inliersMaxValue = lengthCurInliers;
-                    inliers = curInliers;
-                    RetH = curH;
-               elseif lengthCurInliers == inliersMaxValue && (~isempty(curH))
-                    [inliers1, error1] = getHInfo(distfn, curH, matches, t);    
-                    [inliers2, error2] = getHInfo(distfn, RetH, matches, t);
-                    if length(inliers2>0) <= length(inliers1>0) && error2 < error1
-                        inliers = curInliers;
-                        RetH = curH;
-                    end
-               end
-            end
-        else
-            RetH = H;
-            [inliers, error] = getHInfo(distfn, H, matches, t);
+        if size(matches, 1) < 4 || s<4
+            disp(s);
+            disp(matches);
+            error('You need at least 4 points for a homography');
         end
-    end
-end
-
-function [inliers, error] = getHInfo(distfn, H, matches, t)
-            original_points = matches(:,1:2);
-            original_points(:,3) = ones(size(original_points,1),1);
-            
-            pnts_computed = (H' * original_points')';
-            pnts_gt = matches(:,3:4);
-            
-            pnts_computed = num2cell(pnts_computed, 2);            %# Collect the rows into cells
-            pnts_computed = cellfun(@(x) [x(1)/x(3), x(2)/x(3)] , pnts_computed,'UniformOutput', false);
-            pnts_computed = cell2mat(pnts_computed);
-
-            distance_between_pnts_computed = pnts_gt - pnts_computed;
-            distance_between_pnts_computed = num2cell(distance_between_pnts_computed, 2);            %# Collect the rows into cells
-            distance_between_pnts_computed = cellfun(@(x) sqrt(x(1)*x(1) + x(2)*x(2)) , distance_between_pnts_computed);
-            row1 = 1;
-            inliers = zeros(sum((distance_between_pnts_computed < t)),1);
-            for i = 1: size(distance_between_pnts_computed, 1)
-                if (distance_between_pnts_computed(i) < t)
-                    inliers(row1) = i;
-                    row1 = row1 + 1;
-                end
-            end
-            
-            error = distfn(pnts_gt,pnts_computed);
+        
+        if size(matches, 2) == 6
+            x1 = matches(:,1:3);
+            x2 = matches(:,4:6);
+        elseif size(matches, 2) == 4
+            x1 = matches(:,1:2);
+            x1(:,3) = ones(size(x1,1),1);
+            x2 = matches(:,3:4);
+            x2(:,3) = ones(size(x2,1),1);
+        else
+           disp(matches);
+           error("Matches is wrong (need to have 4 or 6 columns");
+        end
+        
+        [x1, T1] = normalisePoints(x1);
+        [x2, T2] = normalisePoints(x2);
+        x1=x1';x2=x2';
+        x = [x1; x2];
+        fittingfn = @(x) fittingfn(x');
+        distfn = @(M, x, t) distfn(M, x', t);
+        degenfn = @(x) degenfn(x');
+        
+        [H, inliers] = ransac(x, fittingfn, distfn, degenfn, s, t, feedback, ...
+                               maxDataTrials, maxTrials);        
+                           
+        fprintf("found %d inlines out of %d points\n", [length(inliers), size(x,2)]);
+        x = x';
+        x = x(inliers, :);
+        H = DLT(x); %get the best H with all the inlines (for less error).
+        H = T2\H*T1;
 end
