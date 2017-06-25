@@ -28,6 +28,7 @@ function [H] = RANSAC_Wrapper(matches, fittingfn, ...
         [x2, T2] = normalisePoints(x2);
         x1=x1';x2=x2';
         x = [x1; x2];
+        
         fittingfn = @(x) fittingfn(x');
         distfn = @(M, x, t) distfn(M, x', t);
         degenfn = @(x) degenfn(x');
@@ -35,9 +36,8 @@ function [H] = RANSAC_Wrapper(matches, fittingfn, ...
         [H, inliers] = ransac(x, fittingfn, distfn, degenfn, s, t, feedback, ...
                                maxDataTrials, maxTrials);        
                            
-        fprintf("found %d inlines out of %d points\n", [length(inliers), size(x,2)]);
-        x = x';
-        x = x(inliers, :);
-        H = DLT(x); %get the best H with all the inlines (for less error).
-        H = T2\H*T1;
+        fprintf("found %d inlines out of %d points.\n", [length(inliers), size(x,2)]);
+        x = x(:, inliers);
+        H = (fittingfn(x))'; %get the best H with all the inlines (for less error).
+        H = (inv(T2)*H*T1)';
 end
