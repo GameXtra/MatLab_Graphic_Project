@@ -12,7 +12,16 @@
 % %[pnts_gt,pnts_computed] = ComputeTestPoints(H,H1); ComputeError(pnts_gt,pnts_computed);
 Img1FileName = 'left.pgm';
 Img2FileName = 'right.pgm';
-[num_matches, matches, dist_vals] = match(Img1FileName, Img2FileName, 0.5);
+[num_matches, matches, dist_vals] = match(Img1FileName, Img2FileName, 0.4);
+[displayedCorr] = DisplayCorr(image1, image2, matches, dist_vals, numberOfPointToShow)
+imshow(display
+[H] = RANSAC_Wrapper(matches, @(x) DLTFile(x), ...
+    @(x,y) ComputeError(x,y), @(x) 0, 5, 400, 1, 100, ...
+    1000);
+T = maketform('projective',H);
+I = imread('left.pgm');
 
-[displayedCorr] = DisplayCorr(imread(Img1FileName), imread(Img2FileName), matches, dist_vals, 10);
-imshow(displayedCorr);
+%imshow(I);
+I2 = imtransform(I,T);
+
+imshow(I2);

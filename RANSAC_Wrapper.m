@@ -1,9 +1,9 @@
 function [H] = RANSAC_Wrapper(matches, fittingfn, ...
     distfn, degenfn, s, t, feedback, maxDataTrials, ...
     maxTrials)
-        if nargin < 9; maxTrials = 1000;    end
-        if nargin < 8; maxDataTrials = 100; end
-        if nargin < 7; feedback = 0;        end
+        if nargin < 9; maxTrials = 1000;        end
+        if nargin < 8; maxDataTrials = 100;     end
+        if nargin < 7; feedback = 0;            end
 
         if size(matches, 1) < 4 || s<4
             disp(s);
