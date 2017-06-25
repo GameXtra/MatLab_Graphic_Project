@@ -12,7 +12,14 @@
 % %[pnts_gt,pnts_computed] = ComputeTestPoints(H,H1); ComputeError(pnts_gt,pnts_computed);
 Img1FileName = 'left.pgm';
 Img2FileName = 'right.pgm';
-[num_matches, matches, dist_vals] = match(Img1FileName, Img2FileName, 0.5);
+[num_matches, matches, dist_vals] = match(Img1FileName, Img2FileName, 0.29);
 
-[displayedCorr] = DisplayCorr(imread(Img1FileName), imread(Img2FileName), matches, dist_vals, 10);
-imshow(displayedCorr);
+newH = DLT(matches);
+disp(newH);
+
+imshow(ComputeProjective(imread(Img2FileName),newH))
+
+
+
+% [displayedCorr] = DisplayCorr(imread(Img1FileName), imread(Img2FileName), matches, dist_vals, 10);
+% imshow(displayedCorr);
