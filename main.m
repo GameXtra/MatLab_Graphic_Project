@@ -17,7 +17,7 @@ Img2FileName = 'right.pgm';
 newH = DLT(matches);
 disp(newH);
 
-imshow(ComputeProjective(imread(Img2FileName),newH))
+imshow(ComputeProjective(imread(Img2FileName),newH));
 
 
 
